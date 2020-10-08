@@ -23,11 +23,13 @@ include:
 
 {% if pillar['cluster']['node_list']|length > 1 -%}
 
+{% set ldap_password = salt['lyveutil.decrypt']('openldap', pillar['openldap']['admin']['secret']) %}
+
 Load provider module:
   cmd.run:
     - name: ldapadd -Y EXTERNAL -H ldapi:/// -w $password -f /opt/seagate/cortx/provisioner/generated_configs/ldap/syncprov_mod.ldif && sleep 2
     - env:
-      - password: {{ salt['lyveutil.decrypt']('openldap', pillar['openldap']['admin']['secret']) }}
+      - password: {{ ldap_password }}
     - watch_in:
       - Restart slapd service
 
@@ -35,7 +37,7 @@ Push provider for data replication:
   cmd.run:
     - name: ldapadd -Y EXTERNAL -H ldapi:/// -w $password -f /opt/seagate/cortx/provisioner/generated_configs/ldap/syncprov.ldif && sleep 2
     - env:
-      - password: {{ salt['lyveutil.decrypt']('openldap', pillar['openldap']['admin']['secret']) }}
+      - password: {{ ldap_password }}
     - watch_in:
       - Restart slapd service
 
